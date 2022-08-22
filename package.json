@@ -8,8 +8,12 @@
     "build": "rollup -cw",
     "test": "node test/index.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["fetch"],
+  "author": "jiawei397",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jiawei397/jwfetch-node.git"
+  },
   "license": "ISC",
   "dependencies": {
     "node-fetch": "^3.2.10"
