@@ -1,5 +1,5 @@
 import typescript from "@rollup/plugin-typescript";
-import clear from "rollup-plugin-clear"
+// import clear from "rollup-plugin-clear"
 
 export default {
   input: "./src/index.ts",
@@ -15,7 +15,7 @@ export default {
     },
   ],
   plugins: [typescript()],
-  watch: {
-    exclude: "node_modules/**",
-  },
+  // watch: {
+  //   exclude: "node_modules/**",
+  // },
 }
