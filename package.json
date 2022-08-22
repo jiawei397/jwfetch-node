@@ -1,0 +1,25 @@
+{
+  "name": "jwfetch-node",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rollup -cw",
+    "test": "node test/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-fetch": "^3.2.10"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^8.3.4",
+    "@types/node": "^18.7.9",
+    "rollup": "^2.78.1",
+    "rollup-plugin-clear": "^2.0.7",
+    "tslib": "^2.4.0",
+    "typescript": "^4.7.4"
+  }
+}
