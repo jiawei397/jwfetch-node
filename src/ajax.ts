@@ -225,9 +225,9 @@ export class BaseAjax {
     }
     if (originHeaders) {
       defaultInjectHeaderKeys!.forEach((key) => {
-        const value = originHeaders.get?.(key) || originHeaders[key];
+        const value = originHeaders[key];
         if (value) {
-          headers[key] = value;
+          headers[key] = Array.isArray(value) ? value.join(', ') : value;
         }
       });
     }

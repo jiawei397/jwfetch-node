@@ -79,7 +79,7 @@ export interface AjaxExConfig extends RequestConfig {
   /* 默认put和post的content-type */
   defaultPutAndPostContentType?: string;
   /* 如果本身是在接口里进行的二次请求，传递原始的headers */
-  originHeaders?: Headers;
+  originHeaders?: Record<string, string | string[]>;
   /* 配合originHeaders使用，如果有这几个字段，将会默认注入 */
   defaultInjectHeaderKeys?: string[];
 }
