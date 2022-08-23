@@ -1,20 +1,16 @@
-# 封装的fetch
-
-[![deno version](https://img.shields.io/badge/deno-^1.16.2-blue?logo=deno)](https://github.com/denoland/deno)
-[![Deno](https://github.com/jiawei397/deno_lib/actions/workflows/deno.yml/badge.svg)](https://github.com/jiawei397/deno_lib/actions/workflows/deno.yml)
+# 封装的fetch，nodejs使用
 
 ## 包含功能点
 
 - 同一时间段重复请求会被缓存过滤掉
 - timeout
-- 取消请求
 
 ## 使用
 
 ### 封装ajax
 
 ```ts
-import { BaseAjax } from "https://deno.land/x/jw_fetch@v0.2.7/mod.ts";
+import { BaseAjax } from "jwfetch-node";
 
 class Ajax extends BaseAjax {
   /**
@@ -60,18 +56,6 @@ ajax.interceptors.response.use(function (data) {
 });
 ```
 
-### 获取可取消的请求
-
-```ts
-const { promise, abort } = ajax.getAbortResult(url, data, options);
-promise.then((result) => console.log(result));
-abort(); // 取消请求
-
-const { promise2, abort2 } = ajax.postAbortResult(url, data, options);
-promise2.then((result) => console.log(result));
-abort2(); // 取消请求
-```
-
 ## ajax配置项
 
 ### url
@@ -92,13 +76,13 @@ Type: `string`
 
 ### headers
 
-Type: `any`
+Type: `object`
 
 添加的请求头
 
 ### data
 
-Type: `any`
+Type: `object`
 
 请求数据，一般是个对象{}。
 
@@ -186,17 +170,6 @@ get请求时是否要进行浏览器编码
 Type: `boolean`
 
 当所有ajax请求停止时，是否要跳出请求。
-
-### signal
-
-Type: `AbortSignal`
-
-主动控制取消请求时可传递此参数，或者直接使用ajaxAbortResult方法。例如：
-
-```
-const controller = new AbortController();
-const {signal} = controller;
-```
 
 ### cacheTimeout
 
