@@ -5,17 +5,16 @@ export default {
   input: "./src/index.ts",
   output: [
     {
-      file: "dist/umd.js",
-      format: "umd",
-      name: "jwfetch-node",
+      file: "dist/index.js",
+      format: "commonjs"
     },
     {
-      file: "dist/index.js",
+      file: "dist/index.mjs",
       format: "esm",
     },
   ],
   plugins: [typescript()],
-  // watch: {
-  //   exclude: "node_modules/**",
-  // },
+  watch: {
+    exclude: "node_modules/**",
+  },
 }

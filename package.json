@@ -2,10 +2,10 @@
   "name": "jwfetch-node",
   "version": "1.0.0",
   "main": "dist/index.js",
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf dist && rollup -cw",
+    "build": "rm -rf dist && rollup -c",
     "test": "node test/index.js",
     "mypublish": "npm run build && npm publish"
   },
