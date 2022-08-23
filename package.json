@@ -1,6 +1,6 @@
 {
   "name": "jwfetch-node",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -9,7 +9,9 @@
     "test": "node test/index.js",
     "mypublish": "npm run build && npm publish"
   },
-  "keywords": ["fetch"],
+  "keywords": [
+    "fetch"
+  ],
   "author": "jiawei397",
   "repository": {
     "type": "git",
