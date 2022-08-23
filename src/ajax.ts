@@ -225,7 +225,7 @@ export class BaseAjax {
     }
     if (originHeaders) {
       defaultInjectHeaderKeys!.forEach((key) => {
-        const value = originHeaders.get(key);
+        const value = originHeaders.get?.(key) || originHeaders[key];
         if (value) {
           headers[key] = value;
         }
