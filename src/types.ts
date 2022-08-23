@@ -1,3 +1,5 @@
+export {Response} from "node-fetch";
+
 export type Method =
   | "get"
   | "GET"

@@ -1,4 +1,4 @@
-import { BaseAjax } from "./src";
+import { BaseAjax, Response } from "./src/index";
 
 class Ajax extends BaseAjax {
   /**
