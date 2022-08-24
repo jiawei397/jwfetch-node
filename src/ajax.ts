@@ -6,6 +6,7 @@ import {
   AjaxPostData,
   AjaxResult,
   ErrorCallback,
+  Logger,
   RequestCallback,
   ResponseCallback,
 } from "./types";
@@ -52,7 +53,13 @@ export class BaseAjax {
   };
 
   public caches = new Map(); // 缓存所有已经请求的Promise，同一时间重复的不再请求
+  logger: Logger;
+
   private IS_AJAX_STOP = false;
+
+  constructor(logger?: Logger) {
+    this.logger = logger || console;
+  }
 
   /**
    * 停止ajax
@@ -97,7 +104,7 @@ export class BaseAjax {
       return;
     }
     if (!msg) {
-      console.error("No message available");
+      this.logger.error("No message available");
       return;
     }
     this.handleMessage(msg);
@@ -107,7 +114,7 @@ export class BaseAjax {
    * 处理消息，具体实现可以覆盖此项
    */
   protected handleMessage(msg: string) {
-    console.error(msg);
+    this.logger.error(msg);
   }
 
   private handleGetUrl(url: string, data: AjaxGetData, isEncodeUrl?: boolean) {
@@ -269,7 +276,7 @@ export class BaseAjax {
    * 一般可以在这里处理跳转逻辑
    */
   protected handleErrorResponse(response: Response) {
-    console.error(
+    this.logger.error(
       `HTTP error, status = ${response.status}, statusText = ${response.statusText}`,
     );
   }
@@ -298,7 +305,7 @@ export class BaseAjax {
       try {
         chain[i](config);
       } catch (e) {
-        console.error(e);
+        this.logger.error(e);
         chain[i + 1]?.(e); // TODO 这个作用没想好
         break;
       }
@@ -392,7 +399,7 @@ export class BaseAjax {
       });
       caches.set(uniqueKey, result);
     } else {
-      console.debug(`read from cache : ${uniqueKey}`);
+      this.logger.debug(`read from cache : ${uniqueKey}`);
     }
     return caches.get(uniqueKey);
   }

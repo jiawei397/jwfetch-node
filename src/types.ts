@@ -84,6 +84,13 @@ export interface AjaxExConfig extends RequestConfig {
   defaultInjectHeaderKeys?: string[];
 }
 
+export type Logger = {
+  debug(...message: any[]): void;
+  info(...message: any[]): void;
+  warn(...message: any[]): void;
+  error(...message: any[]): void;
+}
+
 export type AjaxGetData =
   | string
   | Record<string, string | number | boolean>
