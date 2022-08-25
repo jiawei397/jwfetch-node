@@ -127,7 +127,7 @@ export class BaseAjax {
    * 处理消息，具体实现可以覆盖此项
    */
   protected handleMessage(msg: string) {
-    this.logger.error(msg);
+    // this.logger.error(msg);
   }
 
   private handleGetUrl(url: string, data: AjaxGetData, isEncodeUrl?: boolean) {
@@ -277,8 +277,8 @@ export class BaseAjax {
       const result = await response.text();
       return jsonParse(result);
     } catch (err) { //代表网络异常
-      if (!this.isAbortError(err as any)) { //不属于主动取消的，需要进行提示
-        this.showMessage(err as string, config);
+      if (!this.isAbortError(err)) { //不属于主动取消的，需要进行提示
+        this.showMessage(err, config);
       }
       return Promise.reject(err);
     }
@@ -289,9 +289,9 @@ export class BaseAjax {
    * 一般可以在这里处理跳转逻辑
    */
   protected handleErrorResponse(response: Response) {
-    this.logger.error(
-      `HTTP error, status = ${response.status}, statusText = ${response.statusText}`,
-    );
+    // this.logger.error(
+    //   `HTTP error, status = ${response.status}, statusText = ${response.statusText}`,
+    // );
   }
 
   isAbortError(err: Error) {
