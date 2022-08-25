@@ -8,10 +8,12 @@ import {
   ErrorCallback,
   Logger,
   RequestCallback,
+  Response,
   ResponseCallback,
 } from "./types";
 import { deleteUndefinedProperty, jsonParse } from "./utils";
-import fetch, {Response} from "node-fetch";
+import fetch from "node-fetch";
+import * as md5 from "md5-node";
 
 class Interceptors<T> {
   public chain: any[];
@@ -73,8 +75,19 @@ export class BaseAjax {
   }
 
   protected getUniqueKey(config: AjaxConfig) {
-    return (config.baseURL || "") + config.url + config.method +
-      (config.data ? JSON.stringify(config.data) : "");
+    const headers = config.headers;
+    const keys = [
+      config.baseURL,
+      config.url,
+      config.method,
+      config.data ? JSON.stringify(config.data) : "",
+    ];
+    if (headers) {
+      Object.keys(headers).forEach((key) =>
+        keys.push(key + "=" + headers[key])
+      );
+    }
+    return md5(keys.filter(Boolean).join("_"));
   }
 
   /**

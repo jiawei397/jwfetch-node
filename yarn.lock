@@ -145,6 +145,11 @@ is-core-module@^2.9.0:
   dependencies:
     has "^1.0.3"
 
+md5-node@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/md5-node/-/md5-node-1.0.1.tgz#0e22d009d46bdc95b1d3c5e8c8feddc1a5c3aa88"
+  integrity sha512-y9nI7Wfnq6fxTf5zaZO+XaCE2rP9cuvuxLj3E9a3aAKVxcKdEZIWjoc1uFXZb1jrbUMx+0hd/SIAad6DW9xuSA==
+
 mime-db@1.52.0:
   version "1.52.0"
   resolved "https://registry.npmmirror.com/mime-db/-/mime-db-1.52.0.tgz#bbabcdc02859f4987301c856e3387ce5ec43bf70"
