@@ -47,6 +47,7 @@ export class BaseAjax {
       "x-b3-parentspanid",
       "x-b3-sampled",
     ],
+    isNoAlert: true // 默认不打印错误信息
   };
 
   public interceptors = {
@@ -112,8 +113,8 @@ export class BaseAjax {
   /**
    * 提示错误，可以配置不提示
    */
-  private showMessage(msg: string, config?: AjaxConfig) {
-    if (config && config.isNoAlert) {
+  private showMessage(msg: string, config: AjaxConfig) {
+    if (config.isNoAlert) {
       return;
     }
     if (!msg) {
@@ -127,7 +128,7 @@ export class BaseAjax {
    * 处理消息，具体实现可以覆盖此项
    */
   protected handleMessage(msg: string) {
-    // this.logger.error(msg);
+    this.logger.error(msg);
   }
 
   private handleGetUrl(url: string, data: AjaxGetData, isEncodeUrl?: boolean) {
@@ -265,8 +266,10 @@ export class BaseAjax {
           }
           const msg = await response.text();
           const errMsg = msg || response.statusText;
-          this.showMessage(errMsg, config);
-          this.handleErrorResponse(response);
+          if (config.isNoAlert === false) {
+            this.showMessage(errMsg, config);
+            this.handleErrorResponse(response);
+          }
           return Promise.reject(errMsg);
         }
       }
