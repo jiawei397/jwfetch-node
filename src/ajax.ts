@@ -13,7 +13,7 @@ import {
 } from "./types";
 import { deleteUndefinedProperty, jsonParse } from "./utils";
 import fetch from "node-fetch";
-import * as md5 from "md5-node";
+import md5 from 'md5-es';
 
 class Interceptors<T> {
   public chain: any[];
@@ -87,7 +87,7 @@ export class BaseAjax {
         keys.push(key + "=" + headers[key])
       );
     }
-    return md5(keys.filter(Boolean).join("_"));
+    return md5.hash(keys.filter(Boolean).join("_"));
   }
 
   /**

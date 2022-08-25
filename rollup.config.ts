@@ -1,8 +1,9 @@
 import typescript from "@rollup/plugin-typescript";
-// import clear from "rollup-plugin-clear"
+import commonjs from '@rollup/plugin-commonjs';
 
 export default {
   input: "./src/index.ts",
+  external: ['md5-es'],
   output: [
     {
       file: "dist/index.js",
@@ -13,7 +14,7 @@ export default {
       format: "esm",
     },
   ],
-  plugins: [typescript()],
+  plugins: [typescript(), commonjs()],
   watch: {
     exclude: "node_modules/**",
   },
