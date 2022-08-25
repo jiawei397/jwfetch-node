@@ -292,9 +292,9 @@ export class BaseAjax {
    * 一般可以在这里处理跳转逻辑
    */
   protected handleErrorResponse(response: Response) {
-    // this.logger.error(
-    //   `HTTP error, status = ${response.status}, statusText = ${response.statusText}`,
-    // );
+    this.logger.error(
+      `HTTP error, status = ${response.status}, statusText = ${response.statusText}`,
+    );
   }
 
   isAbortError(err: Error) {
@@ -415,7 +415,9 @@ export class BaseAjax {
       });
       caches.set(uniqueKey, result);
     } else {
-      this.logger.debug(`read from cache : ${uniqueKey}`);
+      if (mergedConfig.isDebug) {
+        this.logger.debug(`read from cache : ${uniqueKey}`);
+      }
     }
     return caches.get(uniqueKey);
   }
