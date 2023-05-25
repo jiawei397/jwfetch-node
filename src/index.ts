@@ -1,9 +1,7 @@
-import {BaseAjax} from "./ajax";
-
-export {BaseAjax, BaseAjax as Ajax};
+import {Ajax} from "./ajax";
 
 export * from "./utils";
 
 export * from "./types";
 
-export default BaseAjax;
+export default Ajax;

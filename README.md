@@ -114,25 +114,11 @@ Default: `cors`
 - no-cors: 该模式用于跨域请求但是服务器不带CORS响应头，也就是服务端不支持CORS；这也是fetch的特殊跨域请求方式；其对应的response
   type为opaque。
 
-### stoppedErrorMessage
-
-Type: `string`
-
-Default: `Ajax has been stopped!`
-
-当所有ajax停止后，提示错误信息。
-
 ### isFile
 
 Type: `boolean`
 
 是否属于文件上传，如果是这样，会根据传递的data，创建一个FormData
-
-### isNoAlert
-
-Type: `boolean`
-
-是否要禁止默认提示错误信息。如果需要自己处理错误消息，则开启此项。
 
 ### isUseOrigin
 
@@ -145,12 +131,6 @@ Type: `boolean`
 Type: `boolean`
 
 get请求时是否要进行浏览器编码
-
-### isOutStop
-
-Type: `boolean`
-
-当所有ajax请求停止时，是否要跳出请求。
 
 ### cacheTimeout
 

@@ -8,15 +8,15 @@ import {
   ErrorCallback,
   Logger,
   RequestCallback,
-  Response,
   ResponseCallback,
 } from "./types";
 import { deleteUndefinedProperty, jsonParse } from "./utils";
 import fetch from "node-fetch";
 import md5 from 'md5-es';
 
-class Interceptors<T> {
-  public chain: any[];
+
+class Interceptors<T extends Function> {
+  chain: any[];
 
   constructor() {
     this.chain = [];
@@ -32,12 +32,27 @@ class Interceptors<T> {
   }
 }
 
-export class BaseAjax {
+export class FetchError extends Error {
+  status?: number; // status code
+  name = "FetchError";
+  originError?: Error;
+
+  constructor(message: string | Error | undefined, status?: number) {
+    super(message instanceof Error ? message.message : message);
+    if (message instanceof Error) {
+      this.stack = message.stack;
+      this.cause = message.cause;
+      this.originError = message;
+    }
+    this.status = status;
+  }
+}
+
+export class Ajax {
   static defaults: AjaxExConfig = {
     timeout: 1000 * 60 * 2,
     timeoutErrorMessage: "timeout",
     timeoutErrorStatus: 504,
-    stoppedErrorMessage: "Ajax has been stopped! ",
     method: "post",
     defaultPutAndPostContentType: "application/json; charset=UTF-8",
     defaultInjectHeaderKeys: [
@@ -47,8 +62,13 @@ export class BaseAjax {
       "x-b3-parentspanid",
       "x-b3-sampled",
     ],
-    isNoAlert: true // 默认不打印错误信息
   };
+
+  private logger: Logger;
+
+  constructor(logger?: Logger) {
+    this.logger = logger || console;
+  }
 
   public interceptors = {
     request: new Interceptors<RequestCallback>(),
@@ -56,24 +76,6 @@ export class BaseAjax {
   };
 
   public caches = new Map(); // 缓存所有已经请求的Promise，同一时间重复的不再请求
-  logger: Logger;
-
-  private IS_AJAX_STOP = false;
-
-  constructor(logger?: Logger) {
-    this.logger = logger || console;
-  }
-
-  /**
-   * 停止ajax
-   */
-  stopAjax() {
-    this.IS_AJAX_STOP = true;
-  }
-
-  isAjaxStopped() {
-    return this.IS_AJAX_STOP;
-  }
 
   protected getUniqueKey(config: AjaxConfig) {
     const headers = config.headers;
@@ -91,6 +93,17 @@ export class BaseAjax {
     return md5.hash(keys.filter(Boolean).join("_"));
   }
 
+  /** 手动清除缓存 */
+  async clearCacheByConfig(cfg: AjaxConfig) {
+    const mergedConfig = this.mergeConfig(cfg);
+    const { cacheStore } = mergedConfig;
+    const uniqueKey = this.getUniqueKey(mergedConfig);
+    if (cacheStore) {
+      await cacheStore.delete(uniqueKey);
+    }
+    this.clearCacheByKey(uniqueKey);
+  }
+
   /**
    * 取消接口请求
    * @param controller 取消控制器
@@ -104,31 +117,8 @@ export class BaseAjax {
    */
   abortAll() {
     for (const cache of this.caches.values()) {
-      if (!cache.config.isOutStop) { // 如果是要跳出停止处理的，就不能给取消了
-        this.abort(cache.controller);
-      }
+      this.abort(cache.controller);
     }
-  }
-
-  /**
-   * 提示错误，可以配置不提示
-   */
-  private showMessage(msg: string, config: AjaxConfig) {
-    if (config.isNoAlert) {
-      return;
-    }
-    if (!msg) {
-      this.logger.error("No message available");
-      return;
-    }
-    this.handleMessage(msg);
-  }
-
-  /**
-   * 处理消息，具体实现可以覆盖此项
-   */
-  protected handleMessage(msg: string) {
-    this.logger.error(msg);
   }
 
   private handleGetUrl(url: string, data: AjaxGetData, isEncodeUrl?: boolean) {
@@ -180,6 +170,7 @@ export class BaseAjax {
     let obj = data;
     if (typeof data === "object") {
       if (isFile) { //文件上传
+        // TODO: not working in Node.js
         const formData = new FormData(); //构造空对象，下面用append方法赋值。
         for (const key in data) {
           if (!Object.prototype.hasOwnProperty.call(data, key)) {
@@ -212,6 +203,7 @@ export class BaseAjax {
       query,
       headers = {},
       method,
+      credentials,
       isFile,
       isUseOrigin,
       isEncodeUrl, //get请求时是否要进行浏览器编码
@@ -266,11 +258,7 @@ export class BaseAjax {
           }
           const msg = await response.text();
           const errMsg = msg || response.statusText;
-          if (config.isNoAlert === false) {
-            this.showMessage(errMsg, config);
-            this.handleErrorResponse(response);
-          }
-          return Promise.reject(errMsg);
+          return Promise.reject(new FetchError(errMsg, response.status));
         }
       }
       if (isUseOrigin) {
@@ -280,21 +268,8 @@ export class BaseAjax {
       const result = await response.text();
       return jsonParse(result);
     } catch (err) { //代表网络异常
-      if (!this.isAbortError(err)) { //不属于主动取消的，需要进行提示
-        this.showMessage(err, config);
-      }
-      return Promise.reject(err);
+      return Promise.reject(new FetchError(err));
     }
-  }
-
-  /**
-   * 处理200-300外的错误状态码的请求
-   * 一般可以在这里处理跳转逻辑
-   */
-  protected handleErrorResponse(response: Response) {
-    this.logger.error(
-      `HTTP error, status = ${response.status}, statusText = ${response.statusText}`,
-    );
   }
 
   isAbortError(err: Error) {
@@ -315,7 +290,7 @@ export class BaseAjax {
 
   private mergeConfig(cfg: AjaxConfig): AjaxConfig {
     deleteUndefinedProperty(cfg);
-    const config = Object.assign({}, BaseAjax.defaults, cfg); // 把默认值覆盖了
+    const config = Object.assign({}, Ajax.defaults, cfg); // 把默认值覆盖了
     const chain = this.interceptors.request.chain;
     for (let i = 0; i < chain.length; i += 2) {
       try {
@@ -365,10 +340,9 @@ export class BaseAjax {
     const abortPromise = new Promise((_resolve, reject) => {
       tp = setTimeout(() => {
         this.abort(controller);
-        reject({
-          code: config.timeoutErrorStatus,
-          message: config.timeoutErrorMessage,
-        });
+        reject(
+          new FetchError(config.timeoutErrorMessage, config.timeoutErrorStatus),
+        );
       }, timeout);
     });
 
@@ -398,13 +372,60 @@ export class BaseAjax {
    */
   private cache_ajax(cfg: AjaxConfig): AjaxResult {
     const mergedConfig = this.mergeConfig(cfg);
-    const { cacheTimeout } = mergedConfig;
+    const { cacheTimeout, cacheStore, isDebug } = mergedConfig;
     if (cacheTimeout === 0) { // 不缓存结果，也就是说不会过滤掉重复的请求
       return this.core_ajax(mergedConfig);
     }
     const uniqueKey = this.getUniqueKey(mergedConfig);
     const caches = this.caches;
-    if (!caches.has(uniqueKey)) {
+    const result = caches.get(uniqueKey);
+    if (result !== undefined) {
+      if (isDebug) {
+        this.logger.debug(`read from cache : ${uniqueKey}`);
+      }
+      result.isFromMemoryCache = true;
+      return result;
+    }
+    if (cacheStore) { // 有cacheStore，处理要复杂一些，先缓存到内存，等成功后再注入到store中
+      const result: AjaxResult = {
+        promise: Promise.resolve(cacheStore.get(uniqueKey)),
+        config: mergedConfig,
+      };
+      result.promise = result.promise.then((res) => {
+        if (res !== undefined && res !== null) {
+          if (isDebug) {
+            this.logger.debug(`read from cacheStore : ${uniqueKey}`);
+          }
+          result.isFromStoreCache = true;
+          return res;
+        }
+        const coreResult = this.core_ajax(mergedConfig);
+        return coreResult.promise;
+      }).then(async (res) => {
+        if (!result.isFromStoreCache) {
+          try {
+            await cacheStore.set(
+              uniqueKey,
+              res,
+              mergedConfig.cacheTimeout
+                ? {
+                  ttl: mergedConfig.cacheTimeout / 1000, // ttl单位设定为秒
+                }
+                : undefined,
+            );
+          } catch (err) {
+            this.logger.error(`cache set ${uniqueKey} error`, err);
+          }
+        }
+        this.clearCacheByKey(uniqueKey); // 成功后在内存中删除
+        return res;
+      }, (err) => {
+        this.clearCacheByKey(uniqueKey); // 错误不缓存
+        return Promise.reject(err);
+      });
+      caches.set(uniqueKey, result);
+      return result;
+    } else {
       const result = this.core_ajax(mergedConfig);
       result.promise = result.promise.then((res) => {
         this.clearCacheByKey(uniqueKey, mergedConfig.cacheTimeout);
@@ -414,22 +435,11 @@ export class BaseAjax {
         return Promise.reject(err);
       });
       caches.set(uniqueKey, result);
-    } else {
-      if (mergedConfig.isDebug) {
-        this.logger.debug(`read from cache : ${uniqueKey}`);
-      }
+      return result;
     }
-    return caches.get(uniqueKey);
   }
 
-  private all_ajax(cfg: AjaxConfig): AjaxResult {
-    const { isOutStop } = cfg;
-    if (!isOutStop && this.isAjaxStopped()) {
-      return {
-        promise: Promise.reject(BaseAjax.defaults.stoppedErrorMessage),
-        config: cfg,
-      };
-    }
+  all_ajax(cfg: AjaxConfig): AjaxResult {
     return this.cache_ajax(cfg);
   }
 
