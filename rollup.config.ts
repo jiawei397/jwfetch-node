@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 
 export default {
   input: "./src/index.ts",
-  external: ['md5-es'],
+  // external: ['md5-es'],
   output: [
     {
       file: "dist/index.js",

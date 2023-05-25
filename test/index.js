@@ -1,27 +1,7 @@
-const { BaseAjax } = require("../dist/index.js");
+const { Ajax } = require("../dist/index.js");
+// import Ajax from "../dist/index.mjs";
 
-class Ajax extends BaseAjax {
-  /**
-   * 处理消息，具体实现可以覆盖此项
-   */
-   handleMessage(msg) {
-    console.log("handleMessage", msg);
-    super.handleMessage(msg);
-  }
-
-  /**
-   * 处理错误请求
-   */
-   handleErrorResponse(response) {
-    console.error(
-      `HTTP error, status = ${response.status}, statusText = ${response.statusText}`,
-    );
-  }
-}
-
-// Ajax.defaults.baseURL = "/api";
-
-export const ajax = new Ajax();
+const ajax = new Ajax();
 
 ajax.interceptors.request.use(function (mergedConfig) {
   console.log("----request---");
@@ -41,6 +21,6 @@ ajax.interceptors.response.use(function (data) {
   return Promise.reject(err);
 });
 
-ajax.get('https://www.baidu.com').then(function(response) {
+ajax.get('https://www.baidu.com').then(function (response) {
   console.log(response);
 })
